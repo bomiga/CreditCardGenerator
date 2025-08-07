@@ -14,39 +14,51 @@ struct CreditCardGenerator {
         case mastercard
         case amex
         case discover
-        
+        case jcb
+        case dinersClub
+        case unionPay
+
         var prefix: String {
             switch self {
-            case .visa:
-                return "4"
-            case .mastercard:
-                return "5"
-            case .amex:
-                return "34"  // or "37"
-            case .discover:
-                return "6"
+            case .visa: return "4"
+            case .mastercard: return "5"
+            case .amex: return "34" // or "37"
+            case .discover: return "6"
+            case .jcb: return "35"
+            case .dinersClub: return "36"
+            case .unionPay: return "62"
             }
         }
-        
+
         var length: Int {
             switch self {
-            case .visa:
-                return 16
-            case .mastercard:
-                return 16
             case .amex:
                 return 15
-            case .discover:
+            case .dinersClub:
+                return 14
+            default:
                 return 16
             }
         }
-        
+
+        var cvcLength: Int {
+            switch self {
+            case .amex:
+                return 4
+            default:
+                return 3
+            }
+        }
+
         var name: String {
             switch self {
             case .visa: return "Visa"
             case .mastercard: return "MasterCard"
             case .amex: return "American Express"
             case .discover: return "Discover"
+            case .jcb: return "JCB"
+            case .dinersClub: return "Diners Club"
+            case .unionPay: return "UnionPay"
             }
         }
     }
@@ -115,6 +127,12 @@ struct CreditCardGenerator {
             let part2 = String(number.dropFirst(4).prefix(6))
             let part3 = String(number.dropFirst(10))
             return "\(part1) \(part2) \(part3)"
+        case .dinersClub:
+            // Diners Club format: 3612 345678 1234
+            let part1 = String(number.prefix(4))
+            let part2 = String(number.dropFirst(4).prefix(6))
+            let part3 = String(number.dropFirst(10))
+            return "\(part1) \(part2) \(part3)"
         default:
             // Standard format: 4532 1234 5678 9012
             return number.chunked(into: 4).joined(separator: " ")
@@ -122,7 +140,7 @@ struct CreditCardGenerator {
     }
     
     // Generate a valid credit card number function
-    func generateCard(type: CardType) -> (number: String, formatted: String) {
+    func generateCard(type: CardType) -> (number: String, formatted: String, cvc: String, expirationDate: String) {
         let totalLength = type.length
         let prefixLength = type.prefix.count
         let digitsToGenerate = totalLength - prefixLength - 1  // -1 for check digit
@@ -140,7 +158,31 @@ struct CreditCardGenerator {
         cardNumber += String(checkDigit)
         
         let formatted = formatCardNumber(cardNumber, type: type)
-        return (cardNumber, formatted)
+        let cvc = generateCVC(for: type)
+        let expirationDate = generateExpirationDate()
+
+        return (cardNumber, formatted, cvc, expirationDate)
+    }
+
+    // Private helper to generate CVC
+    private func generateCVC(for type: CardType) -> String {
+        let cvcLength = type.cvcLength
+        var cvc = ""
+        for _ in 0..<cvcLength {
+            cvc += String(Int.random(in: 0...9))
+        }
+        return cvc
+    }
+
+    // Private helper to generate a future expiration date
+    private func generateExpirationDate() -> String {
+        let currentYear = Calendar.current.component(.year, from: Date()) % 100 // Get last two digits of year
+        let randomYearOffset = Int.random(in: 2...5) // Expires in 2 to 5 years
+        let expiryYear = currentYear + randomYearOffset
+
+        let randomMonth = Int.random(in: 1...12)
+
+        return String(format: "%02d/%02d", randomMonth, expiryYear)
     }
     
 }
@@ -163,23 +205,61 @@ let visaCard = generator.generateCard(type: .visa)
 print("-----------------------------------------")
 print("Generated Visa: \(visaCard.formatted)")
 print("Raw: \(visaCard.number)")
+print("CVC: \(visaCard.cvc)")
+print("Expires: \(visaCard.expirationDate)")
 print("Valid: \(generator.isValidLuhn(visaCard.number))")
 print("-----------------------------------------")
 
 let mastercardCard = generator.generateCard(type: .mastercard)
+print("-----------------------------------------")
 print("Generated Mastercard: \(mastercardCard.formatted)")
 print("Raw: \(mastercardCard.number)")
+print("CVC: \(mastercardCard.cvc)")
+print("Expires: \(mastercardCard.expirationDate)")
 print("Valid: \(generator.isValidLuhn(mastercardCard.number))")
 print("-----------------------------------------")
 
 let amexCard = generator.generateCard(type: .amex)
+print("-----------------------------------------")
 print("Generated Amex: \(amexCard.formatted)")
 print("Raw: \(amexCard.number)")
+print("CVC: \(amexCard.cvc)")
+print("Expires: \(amexCard.expirationDate)")
 print("Valid: \(generator.isValidLuhn(amexCard.number))")
 print("-----------------------------------------")
 
 let discoverCard = generator.generateCard(type: .discover)
-print("Generated Discover: \(amexCard.formatted)")
+print("-----------------------------------------")
+print("Generated Discover: \(discoverCard.formatted)")
 print("Raw: \(discoverCard.number)")
+print("CVC: \(discoverCard.cvc)")
+print("Expires: \(discoverCard.expirationDate)")
 print("Valid: \(generator.isValidLuhn(discoverCard.number))")
+print("-----------------------------------------")
+
+let jcbCard = generator.generateCard(type: .jcb)
+print("-----------------------------------------")
+print("Generated JCB: \(jcbCard.formatted)")
+print("Raw: \(jcbCard.number)")
+print("CVC: \(jcbCard.cvc)")
+print("Expires: \(jcbCard.expirationDate)")
+print("Valid: \(generator.isValidLuhn(jcbCard.number))")
+print("-----------------------------------------")
+
+let dinersClubCard = generator.generateCard(type: .dinersClub)
+print("-----------------------------------------")
+print("Generated Diners Club: \(dinersClubCard.formatted)")
+print("Raw: \(dinersClubCard.number)")
+print("CVC: \(dinersClubCard.cvc)")
+print("Expires: \(dinersClubCard.expirationDate)")
+print("Valid: \(generator.isValidLuhn(dinersClubCard.number))")
+print("-----------------------------------------")
+
+let unionPayCard = generator.generateCard(type: .unionPay)
+print("-----------------------------------------")
+print("Generated UnionPay: \(unionPayCard.formatted)")
+print("Raw: \(unionPayCard.number)")
+print("CVC: \(unionPayCard.cvc)")
+print("Expires: \(unionPayCard.expirationDate)")
+print("Valid: \(generator.isValidLuhn(unionPayCard.number))")
 print("-----------------------------------------")
