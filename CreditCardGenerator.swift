@@ -7,9 +7,9 @@
 
 import Foundation
 
-struct CreditCardGenerator {
+class CreditCardGenerator {
     // Define different credit card types and their rules
-    enum CardType {
+    enum CardType: CaseIterable {
         case visa
         case mastercard
         case amex
@@ -184,6 +184,60 @@ struct CreditCardGenerator {
 
         return String(format: "%02d/%02d", randomMonth, expiryYear)
     }
+
+    private func generateCards(for type: CardType) {
+        print("How many \(type.name) cards would you like to generate? ", terminator: "")
+        if let countString = readLine(), let count = Int(countString), count > 0 {
+            print("\nGenerating \(count) \(type.name) card(s)...")
+            for _ in 0..<count {
+                let card = generateCard(type: type)
+                printCardDetails(card)
+            }
+        } else {
+            print("\nInvalid number. Please enter a positive integer.")
+        }
+    }
+
+    private func printCardDetails(_ card: (number: String, formatted: String, cvc: String, expirationDate: String)) {
+        print("-----------------------------------------")
+        print("Card: \(card.formatted)")
+        print("CVC: \(card.cvc)")
+        print("Expires: \(card.expirationDate)")
+        print("Valid: \(isValidLuhn(card.number))")
+        print("-----------------------------------------")
+    }
+
+    func run() {
+        print("💳 Welcome to the Credit Card Generator!")
+
+        var shouldContinue = true
+        while shouldContinue {
+            print("\nPlease select a card type to generate:")
+
+            let cardTypes = CardType.allCases
+            for (index, cardType) in cardTypes.enumerated() {
+                print("\(index + 1). \(cardType.name)")
+            }
+            print("\(cardTypes.count + 1). Exit")
+
+            print("\nEnter your choice (1-\(cardTypes.count + 1)): ", terminator: "")
+
+            if let choiceString = readLine(), let choice = Int(choiceString) {
+                switch choice {
+                case 1...cardTypes.count:
+                    let selectedCardType = cardTypes[choice - 1]
+                    generateCards(for: selectedCardType)
+                case cardTypes.count + 1:
+                    shouldContinue = false
+                    print("Goodbye!\n")
+                default:
+                    print("\nInvalid choice. Please enter a number between 1 and \(cardTypes.count + 1).")
+                }
+            } else {
+                print("\nInvalid input. Please enter a number.")
+            }
+        }
+    }
     
 }
 
@@ -198,68 +252,9 @@ extension String {
     }
 }
 
-let generator = CreditCardGenerator()
+func main() {
+    let app = CreditCardGenerator()
+    app.run()
+}
 
-// Generate cards of different types
-let visaCard = generator.generateCard(type: .visa)
-print("-----------------------------------------")
-print("Generated Visa: \(visaCard.formatted)")
-print("Raw: \(visaCard.number)")
-print("CVC: \(visaCard.cvc)")
-print("Expires: \(visaCard.expirationDate)")
-print("Valid: \(generator.isValidLuhn(visaCard.number))")
-print("-----------------------------------------")
-
-let mastercardCard = generator.generateCard(type: .mastercard)
-print("-----------------------------------------")
-print("Generated Mastercard: \(mastercardCard.formatted)")
-print("Raw: \(mastercardCard.number)")
-print("CVC: \(mastercardCard.cvc)")
-print("Expires: \(mastercardCard.expirationDate)")
-print("Valid: \(generator.isValidLuhn(mastercardCard.number))")
-print("-----------------------------------------")
-
-let amexCard = generator.generateCard(type: .amex)
-print("-----------------------------------------")
-print("Generated Amex: \(amexCard.formatted)")
-print("Raw: \(amexCard.number)")
-print("CVC: \(amexCard.cvc)")
-print("Expires: \(amexCard.expirationDate)")
-print("Valid: \(generator.isValidLuhn(amexCard.number))")
-print("-----------------------------------------")
-
-let discoverCard = generator.generateCard(type: .discover)
-print("-----------------------------------------")
-print("Generated Discover: \(discoverCard.formatted)")
-print("Raw: \(discoverCard.number)")
-print("CVC: \(discoverCard.cvc)")
-print("Expires: \(discoverCard.expirationDate)")
-print("Valid: \(generator.isValidLuhn(discoverCard.number))")
-print("-----------------------------------------")
-
-let jcbCard = generator.generateCard(type: .jcb)
-print("-----------------------------------------")
-print("Generated JCB: \(jcbCard.formatted)")
-print("Raw: \(jcbCard.number)")
-print("CVC: \(jcbCard.cvc)")
-print("Expires: \(jcbCard.expirationDate)")
-print("Valid: \(generator.isValidLuhn(jcbCard.number))")
-print("-----------------------------------------")
-
-let dinersClubCard = generator.generateCard(type: .dinersClub)
-print("-----------------------------------------")
-print("Generated Diners Club: \(dinersClubCard.formatted)")
-print("Raw: \(dinersClubCard.number)")
-print("CVC: \(dinersClubCard.cvc)")
-print("Expires: \(dinersClubCard.expirationDate)")
-print("Valid: \(generator.isValidLuhn(dinersClubCard.number))")
-print("-----------------------------------------")
-
-let unionPayCard = generator.generateCard(type: .unionPay)
-print("-----------------------------------------")
-print("Generated UnionPay: \(unionPayCard.formatted)")
-print("Raw: \(unionPayCard.number)")
-print("CVC: \(unionPayCard.cvc)")
-print("Expires: \(unionPayCard.expirationDate)")
-print("Valid: \(generator.isValidLuhn(unionPayCard.number))")
-print("-----------------------------------------")
+main()
