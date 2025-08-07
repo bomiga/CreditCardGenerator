@@ -4,49 +4,58 @@ A Swift-based credit card number generator that creates mathematically valid cre
 
 ## ✨ What It Does
 
-This tool generates valid credit card numbers for major card types including Visa, MasterCard, American Express, and Discover. All generated numbers pass the industry-standard Luhn algorithm validation.
-
-Along with the card number, it also generates:
-- A random **CVC/CVV** security code (3 or 4 digits).
-- A random, future **expiration date** (MM/YY).
-
-All generated data is completely random and not tied to any real accounts.
-
-## 🧠 How It Works
-
-### The Luhn Algorithm
-The heart of this project is the Luhn algorithm (also known as the "modulus 10" algorithm), which is used by credit card companies to validate card numbers:
-
-1. **Starting from the right**, double every second digit
-2. If doubling results in a two-digit number, add those digits together
-3. Sum all the digits
-4. If the total is divisible by 10, the number is valid
-
-### Generation Process
-1. **Define card type rules** - Each card type has specific prefixes and lengths
-2. **Generate random digits** for the middle portion
-3. **Calculate check digit** using the Luhn algorithm to ensure validity
-4. **Format the result** with proper spacing for readability
+This tool provides a simple way to generate valid, fake credit card numbers for testing and educational purposes. It features:
+- **Interactive Mode:** A user-friendly command-line interface that guides you through the generation process.
+- **Multiple Card Types:** Support for major credit card networks like Visa, MasterCard, Amex, and more.
+- **Complete Card Data:** Generates not just the card number, but also a random CVC and a future expiration date.
+- **Luhn Algorithm Validation:** All generated numbers are mathematically valid according to the Luhn algorithm.
 
 ## 🚀 Usage
 
-```swift
-let generator = CreditCardGenerator()
+This tool now runs in a user-friendly interactive mode by default. To start, simply run the script from your terminal:
 
-// Generate a Visa card
-let visaCard = generator.generateCard(type: .visa)
-print("Card: \(visaCard.formatted)")
-print("CVC: \(visaCard.cvc)")
-print("Expires: \(visaCard.expirationDate)")
-// Example Output:
-// Card: 4532 1234 5678 9012
-// CVC: 123
-// Expires: 08/28
+```bash
+swift CreditCardGenerator.swift
+```
 
-// Validate any credit card number
-let isValid = generator.isValidLuhn(visaCard.number)
-print("Is Valid: \(isValid)")
-// Output: Is Valid: true
+The script will then guide you through the process:
+
+1.  **Welcome Message:** You will be greeted with a welcome message.
+2.  **Select Card Type:** A menu of all supported card types will be displayed. Enter the number corresponding to your choice.
+3.  **Enter Quantity:** You will be prompted to enter the number of cards you wish to generate.
+4.  **View Results:** The details of the generated cards will be printed to the console.
+5.  **Continue or Exit:** You can then choose to generate more cards or exit the program.
+
+### Example Session
+
+```
+💳 Welcome to the Credit Card Generator!
+
+Please select a card type to generate:
+1. Visa
+2. MasterCard
+3. American Express
+4. Discover
+5. JCB
+6. Diners Club
+7. UnionPay
+8. Exit
+
+Enter your choice (1-8): 1
+How many Visa cards would you like to generate? 2
+
+Generating 2 Visa card(s)...
+-----------------------------------------
+Card: 4558 2140 0038 9762
+CVC: 123
+Expires: 08/28
+Valid: true
+-----------------------------------------
+Card: 4123 4567 8901 2345
+CVC: 456
+Expires: 11/29
+Valid: true
+-----------------------------------------
 ```
 
 ### Supported Card Types
