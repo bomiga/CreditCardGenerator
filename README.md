@@ -4,7 +4,13 @@ A Swift-based credit card number generator that creates mathematically valid cre
 
 ## ✨ What It Does
 
-This tool generates valid credit card numbers for major card types including Visa, MasterCard, American Express, and Discover. All generated numbers pass the industry-standard Luhn algorithm validation but are completely random and not tied to any real accounts.
+This tool generates valid credit card numbers for major card types including Visa, MasterCard, American Express, and Discover. All generated numbers pass the industry-standard Luhn algorithm validation.
+
+Along with the card number, it also generates:
+- A random **CVC/CVV** security code (3 or 4 digits).
+- A random, future **expiration date** (MM/YY).
+
+All generated data is completely random and not tied to any real accounts.
 
 ## 🧠 How It Works
 
@@ -29,13 +35,18 @@ let generator = CreditCardGenerator()
 
 // Generate a Visa card
 let visaCard = generator.generateCard(type: .visa)
-print("Visa: \(visaCard.formatted)")
-// Output: 4532 1234 5678 9012
+print("Card: \(visaCard.formatted)")
+print("CVC: \(visaCard.cvc)")
+print("Expires: \(visaCard.expirationDate)")
+// Example Output:
+// Card: 4532 1234 5678 9012
+// CVC: 123
+// Expires: 08/28
 
 // Validate any credit card number
-let isValid = generator.isValidLuhn("4532123456789012")
-print("Valid: \(isValid)")
-// Output: Valid: true
+let isValid = generator.isValidLuhn(visaCard.number)
+print("Is Valid: \(isValid)")
+// Output: Is Valid: true
 ```
 
 ### Supported Card Types
@@ -43,6 +54,9 @@ print("Valid: \(isValid)")
 - 🔴 **MasterCard** - 16 digits, starts with 5
 - 🟢 **American Express** - 15 digits, starts with 34/37
 - 🟠 **Discover** - 16 digits, starts with 6
+- 🟣 **JCB** - 16 digits, starts with 35
+- ⚫ **Diners Club** - 14 digits, starts with 36
+- ⚪ **UnionPay** - 16 digits, starts with 62
 
 ## 🛠 Technical Details
 
@@ -65,17 +79,42 @@ Building this project taught me:
 ## 📋 Example Output
 
 ```
+-----------------------------------------
 Generated Visa: 4558 2140 0038 9762
+CVC: 123
+Expires: 08/28
 Valid: true
-
-Generated MasterCard: 5235 4147 1161 1292
+-----------------------------------------
+Generated Mastercard: 5235 4147 1161 1292
+CVC: 456
+Expires: 11/29
 Valid: true
-
+-----------------------------------------
 Generated Amex: 3448 757196 82072
+CVC: 7890
+Expires: 03/27
 Valid: true
-
-Generated Discover: 6005 6725 0828 7339
+-----------------------------------------
+Generated Discover: 6011 6725 0828 7339
+CVC: 135
+Expires: 05/30
 Valid: true
+-----------------------------------------
+Generated JCB: 3528 1234 5678 9012
+CVC: 246
+Expires: 09/28
+Valid: true
+-----------------------------------------
+Generated Diners Club: 3612 345678 1234
+CVC: 357
+Expires: 01/29
+Valid: true
+-----------------------------------------
+Generated UnionPay: 6221 2612 3456 7890
+CVC: 468
+Expires: 06/30
+Valid: true
+-----------------------------------------
 ```
 
 ## ⚠️ Important Disclaimer
