@@ -21,12 +21,44 @@ class CreditCardGenerator {
         var prefix: String {
             switch self {
             case .visa: return "4"
-            case .mastercard: return "5"
-            case .amex: return "34" // or "37"
-            case .discover: return "6"
-            case .jcb: return "35"
-            case .dinersClub: return "36"
-            case .unionPay: return "62"
+            case .mastercard:
+                // MasterCard: 51-55 or 2221-2720
+                let useNewRange = Bool.random()
+                if useNewRange {
+                    // New range: 2221-2720
+                    return String(Int.random(in: 2221...2720))
+                } else {
+                    // Old range: 51-55
+                    return "5\(Int.random(in: 1...5))"
+                }
+            case .amex:
+                // American Express: 34 or 37
+                return Bool.random() ? "34" : "37"
+            case .discover:
+                // Discover: 6011, 622126-622925, 644-649, or 65
+                let option = Int.random(in: 0...3)
+                switch option {
+                case 0: return "6011"
+                case 1: return String(Int.random(in: 622126...622925))
+                case 2: return "64\(Int.random(in: 4...9))"
+                case 3: return "65"
+                default: return "6011"
+                }
+            case .jcb:
+                // JCB: 3528-3589
+                return String(Int.random(in: 3528...3589))
+            case .dinersClub:
+                // Diners Club: 36, 38, or 300-305
+                let option = Int.random(in: 0...2)
+                switch option {
+                case 0: return "36"
+                case 1: return "38"
+                case 2: return String(Int.random(in: 300...305))
+                default: return "36"
+                }
+            case .unionPay:
+                // UnionPay: 62 or 81
+                return Bool.random() ? "62" : "81"
             }
         }
 
@@ -128,11 +160,22 @@ class CreditCardGenerator {
             let part3 = String(number.dropFirst(10))
             return "\(part1) \(part2) \(part3)"
         case .dinersClub:
-            // Diners Club format: 3612 345678 1234
-            let part1 = String(number.prefix(4))
-            let part2 = String(number.dropFirst(4).prefix(6))
-            let part3 = String(number.dropFirst(10))
-            return "\(part1) \(part2) \(part3)"
+            // Diners Club format varies by prefix
+            // 300-305: 3-6-5 format (e.g., "300 123456 78901")
+            // 36, 38: 4-6-4 format (e.g., "3612 345678 1234")
+            if number.hasPrefix("30") {
+                // 300-305 prefix: 3-6-5 format
+                let part1 = String(number.prefix(3))
+                let part2 = String(number.dropFirst(3).prefix(6))
+                let part3 = String(number.dropFirst(9))
+                return "\(part1) \(part2) \(part3)"
+            } else {
+                // 36, 38 prefix: 4-6-4 format
+                let part1 = String(number.prefix(4))
+                let part2 = String(number.dropFirst(4).prefix(6))
+                let part3 = String(number.dropFirst(10))
+                return "\(part1) \(part2) \(part3)"
+            }
         default:
             // Standard format: 4532 1234 5678 9012
             return number.chunked(into: 4).joined(separator: " ")
@@ -142,11 +185,16 @@ class CreditCardGenerator {
     // Generate a valid credit card number function
     func generateCard(type: CardType) -> (number: String, formatted: String, cvc: String, expirationDate: String) {
         let totalLength = type.length
-        let prefixLength = type.prefix.count
+        
+        // Start with the prefix (get it once to avoid inconsistent lengths)
+        var cardNumber = type.prefix
+        let prefixLength = cardNumber.count
         let digitsToGenerate = totalLength - prefixLength - 1  // -1 for check digit
         
-        // Start with the prefix
-        var cardNumber = type.prefix
+        // Validate that we have a positive number of digits to generate
+        guard digitsToGenerate >= 0 else {
+            fatalError("Invalid card configuration: prefix length (\(prefixLength)) exceeds total length (\(totalLength))")
+        }
         
         // Generate random digits for the middle part
         for _ in 0..<digitsToGenerate {
@@ -178,7 +226,7 @@ class CreditCardGenerator {
     private func generateExpirationDate() -> String {
         let currentYear = Calendar.current.component(.year, from: Date()) % 100 // Get last two digits of year
         let randomYearOffset = Int.random(in: 2...5) // Expires in 2 to 5 years
-        let expiryYear = currentYear + randomYearOffset
+        let expiryYear = (currentYear + randomYearOffset) % 100 // Handle overflow past 99
 
         let randomMonth = Int.random(in: 1...12)
 
@@ -188,6 +236,12 @@ class CreditCardGenerator {
     private func generateCards(for type: CardType) {
         print("How many \(type.name) cards would you like to generate? ", terminator: "")
         if let countString = readLine(), let count = Int(countString), count > 0 {
+            // Add upper limit to prevent excessive generation
+            guard count <= 10000 else {
+                print("\nError: Cannot generate more than 10,000 cards at once. Please enter a smaller number.")
+                return
+            }
+            
             print("\nGenerating \(count) \(type.name) card(s)...")
             for _ in 0..<count {
                 let card = generateCard(type: type)
@@ -244,6 +298,7 @@ class CreditCardGenerator {
 // Helper extension for chunking strings
 extension String {
     func chunked(into size: Int) -> [String] {
+        guard size > 0 else { return [self] }
         return stride(from: 0, to: count, by: size).map {
             let start = index(startIndex, offsetBy: $0)
             let end = index(start, offsetBy: min(size, count - $0))
