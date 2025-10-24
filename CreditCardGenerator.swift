@@ -261,6 +261,79 @@ class CreditCardGenerator {
         print("-----------------------------------------")
     }
 
+    private func generateMixedCardsToFile() {
+        print("How many mixed cards would you like to generate? ", terminator: "")
+        if let countString = readLine(), let count = Int(countString), count > 0 {
+            // Add upper limit to prevent excessive generation
+            guard count <= 10000 else {
+                print("\nError: Cannot generate more than 10,000 cards at once. Please enter a smaller number.")
+                return
+            }
+            
+            print("Enter filename (without extension): ", terminator: "")
+            guard let filename = readLine(), !filename.isEmpty else {
+                print("\nInvalid filename. Operation cancelled.")
+                return
+            }
+            
+            let sanitizedFilename = filename.trimmingCharacters(in: .whitespacesAndNewlines)
+            let filePath = "\(sanitizedFilename).txt"
+            
+            print("\nGenerating \(count) mixed credit cards and saving to \(filePath)...")
+            
+            var fileContent = "💳 Mixed Credit Card Generator Output\n"
+            fileContent += "Generated on: \(DateFormatter.localizedString(from: Date(), dateStyle: .medium, timeStyle: .short))\n"
+            fileContent += "Total cards: \(count)\n"
+            fileContent += String(repeating: "=", count: 50) + "\n\n"
+            
+            let cardTypes = CardType.allCases
+            var cardCounts: [String: Int] = [:]
+            
+            for i in 1...count {
+                let randomCardType = cardTypes.randomElement()!
+                let card = generateCard(type: randomCardType)
+                
+                // Count card types
+                cardCounts[randomCardType.name, default: 0] += 1
+                
+                // Add card details to file content
+                fileContent += "Card #\(i) - \(randomCardType.name)\n"
+                fileContent += "-----------------------------------------\n"
+                fileContent += "Card: \(card.formatted)\n"
+                fileContent += "CVC: \(card.cvc)\n"
+                fileContent += "Expires: \(card.expirationDate)\n"
+                fileContent += "Valid: \(isValidLuhn(card.number))\n"
+                fileContent += "-----------------------------------------\n\n"
+            }
+            
+            // Add summary at the end
+            fileContent += String(repeating: "=", count: 50) + "\n"
+            fileContent += "SUMMARY\n"
+            fileContent += String(repeating: "=", count: 50) + "\n"
+            for (cardType, count) in cardCounts.sorted(by: { $0.key < $1.key }) {
+                fileContent += "\(cardType): \(count) cards\n"
+            }
+            
+            // Write to file
+            do {
+                try fileContent.write(toFile: filePath, atomically: true, encoding: .utf8)
+                print("✅ Successfully generated \(count) cards and saved to '\(filePath)'")
+                
+                // Display summary to console
+                print("\n📊 Summary:")
+                for (cardType, count) in cardCounts.sorted(by: { $0.key < $1.key }) {
+                    print("   \(cardType): \(count) cards")
+                }
+                print()
+            } catch {
+                print("❌ Error writing to file: \(error.localizedDescription)")
+                print("Cards were generated but could not be saved to file.")
+            }
+        } else {
+            print("\nInvalid number. Please enter a positive integer.")
+        }
+    }
+
     func run() {
         print("💳 Welcome to the Credit Card Generator!")
 
@@ -272,9 +345,10 @@ class CreditCardGenerator {
             for (index, cardType) in cardTypes.enumerated() {
                 print("\(index + 1). \(cardType.name)")
             }
-            print("\(cardTypes.count + 1). Exit")
+            print("\(cardTypes.count + 1). Generate Mixed Cards to File")
+            print("\(cardTypes.count + 2). Exit")
 
-            print("\nEnter your choice (1-\(cardTypes.count + 1)): ", terminator: "")
+            print("\nEnter your choice (1-\(cardTypes.count + 2)): ", terminator: "")
 
             if let choiceString = readLine(), let choice = Int(choiceString) {
                 switch choice {
@@ -282,10 +356,12 @@ class CreditCardGenerator {
                     let selectedCardType = cardTypes[choice - 1]
                     generateCards(for: selectedCardType)
                 case cardTypes.count + 1:
+                    generateMixedCardsToFile()
+                case cardTypes.count + 2:
                     shouldContinue = false
                     print("Goodbye!\n")
                 default:
-                    print("\nInvalid choice. Please enter a number between 1 and \(cardTypes.count + 1).")
+                    print("\nInvalid choice. Please enter a number between 1 and \(cardTypes.count + 2).")
                 }
             } else {
                 print("\nInvalid input. Please enter a number.")
