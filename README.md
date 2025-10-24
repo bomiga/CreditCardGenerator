@@ -155,7 +155,7 @@ Valid: true
 - **Complete Data**: Includes card number, CVC, and realistic expiration dates
 - **Error Prevention**: Built-in limits and validation prevent misuse
 
-## � File Export Feature
+### File Export Feature
 
 The new mixed card generation feature allows you to:
 
@@ -183,7 +183,7 @@ Generated card type distribution:
 - UnionPay: 7 cards
 ```
 
-## �🔧 Recent Improvements
+## 🔧 Recent Improvements
 
 The latest version includes significant enhancements and bug fixes:
 
